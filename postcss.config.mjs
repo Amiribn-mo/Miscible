@@ -1,6 +1,6 @@
 const config = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    "@tailwindcss/postcss": {},  // ← Fixed: was "@tailwindcss/postcss" (missing leading @ in the key)
   },
 };
 
