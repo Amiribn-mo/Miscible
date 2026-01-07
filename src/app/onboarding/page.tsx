@@ -26,7 +26,6 @@ export default function OnboardingPage() {
     setError("");
 
     try {
-      // Generate RSA keypair
       const keyPair = await crypto.subtle.generateKey(
         {
           name: "RSA-OAEP",
@@ -38,17 +37,11 @@ export default function OnboardingPage() {
         ["encrypt", "decrypt"]
       );
 
-      // Export keys
       const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);
       const privateKey = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
 
-      // Save public key (unencrypted)
       await savePublicKey(publicKey);
-
-      // Save private key (encrypted with passphrase)
       await savePrivateKey(privateKey, passphrase);
-
-      // Store passphrase in session for immediate use
       sessionStorage.setItem("passphrase", passphrase);
 
       router.push("/notes");
@@ -68,7 +61,7 @@ export default function OnboardingPage() {
               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold mb-3">Create Your Passphrase</h1>
+          <h1 className="text-3xl font-bold mb-3 text-black dark:text-white">Create Your Passphrase</h1>
           <p className="text-gray-600 dark:text-gray-400">
             This passphrase encrypts your notes. You'll need it to access your notes on any device.
           </p>
@@ -76,29 +69,29 @@ export default function OnboardingPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Passphrase</label>
+            <label className="block text-sm font-medium mb-2 text-black dark:text-white">Passphrase</label>
             <input
               type="password"
               value={passphrase}
               onChange={(e) => setPassphrase(e.target.value)}
               placeholder="Enter passphrase (min 8 characters)"
-              className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Confirm Passphrase</label>
+            <label className="block text-sm font-medium mb-2 text-black dark:text-white">Confirm Passphrase</label>
             <input
               type="password"
               value={confirmPassphrase}
               onChange={(e) => setConfirmPassphrase(e.target.value)}
               placeholder="Re-enter passphrase"
-              className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
             />
           </div>
 
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+            <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
               {error}
             </div>
           )}

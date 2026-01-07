@@ -39,13 +39,13 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-neutral-900">
+    <div className="h-screen flex flex-col bg-white dark:bg-neutral-900 pt-4">
       <header className="flex-shrink-0 pt-safe pb-4 px-4 border-b border-gray-200 dark:border-neutral-800">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Notes</h1>
+          <h1 className="text-2xl font-bold text-black dark:text-white">Notes</h1>
           <Link
             href="/create"
-            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-medium active:scale-95 transition-transform touch-manipulation"
+            className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-medium active:scale-95 transition-transform touch-manipulation"
           >
             + New
           </Link>
@@ -60,8 +60,8 @@ export default function NotesPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold mb-2">Start Writing</h2>
-            <p className="text-gray-500 mb-8 max-w-sm">
+            <h2 className="text-2xl font-bold text-black dark:text-white mb-2">Start Writing</h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-sm">
               Create your first encrypted note. Everything is secured with your passphrase.
             </p>
             <Link
@@ -79,10 +79,10 @@ export default function NotesPage() {
                 href={`/notes/${note.id}`}
                 className="block p-4 border border-gray-200 dark:border-neutral-700 rounded-2xl active:bg-gray-50 dark:active:bg-neutral-800 transition-colors touch-manipulation"
               >
-                <h3 className="font-semibold text-base mb-1 line-clamp-2">
+                <h3 className="font-semibold text-base mb-1 line-clamp-2 text-black dark:text-white">
                   {note.title || "Untitled"}
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {new Date(note.createdAt).toLocaleDateString()}
                 </p>
               </Link>

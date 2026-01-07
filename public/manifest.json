@@ -4,8 +4,8 @@
   "description": "Offline encrypted notes using RSA + AES",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#03060d",
+  "theme_color": "#03060d",
   "icons": [
     {
       "src": "/icon-192.png",

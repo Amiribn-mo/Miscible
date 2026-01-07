@@ -60,13 +60,13 @@ export default function NotePage() {
             onClick={() => router.push("/notes")}
             className="p-2 -ml-2 active:bg-gray-100 dark:active:bg-neutral-800 rounded-lg transition-colors touch-manipulation"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {saving ? "Saving..." : "Saved"}
             </span>
             <button
@@ -76,7 +76,7 @@ export default function NotePage() {
                   router.push("/notes");
                 }
               }}
-              className="p-2 text-red-600 active:bg-red-50 dark:active:bg-red-900/20 rounded-lg transition-colors touch-manipulation"
+              className="p-2 text-red-600 dark:text-red-400 active:bg-red-50 dark:active:bg-red-900/20 rounded-lg transition-colors touch-manipulation"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -93,14 +93,14 @@ export default function NotePage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Title"
-            className="w-full text-2xl font-bold bg-transparent outline-none mb-4 placeholder-gray-300 dark:placeholder-gray-600"
+            className="w-full text-2xl font-bold bg-transparent outline-none mb-4 placeholder-gray-300 dark:placeholder-gray-600 text-black dark:text-white"
           />
 
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Start writing..."
-            className="w-full min-h-[calc(100vh-12rem)] resize-none bg-transparent outline-none text-base leading-relaxed placeholder-gray-300 dark:placeholder-gray-600"
+            className="w-full min-h-[calc(100vh-12rem)] resize-none bg-transparent outline-none text-base leading-relaxed placeholder-gray-300 dark:placeholder-gray-600 text-black dark:text-white"
           />
         </div>
       </main>

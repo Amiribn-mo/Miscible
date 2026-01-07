@@ -35,14 +35,14 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="h-screen  flex flex-col bg-white dark:bg-neutral-900 ">
+    <div className="h-screen flex flex-col bg-white dark:bg-neutral-900">
       <header className="flex-shrink-0 pt-safe pb-3 px-4 border-b border-gray-200 dark:border-neutral-800 mt-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.push("/notes")}
             className="p-2 -ml-2 active:bg-gray-100 dark:active:bg-neutral-800 rounded-lg transition-colors touch-manipulation"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -50,7 +50,7 @@ export default function CreatePage() {
           <button
             onClick={handleCreate}
             disabled={creating || !title.trim()}
-            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-medium disabled:opacity-50 active:scale-95 transition-transform touch-manipulation"
+            className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-medium disabled:opacity-50 active:scale-95 transition-transform touch-manipulation"
           >
             {creating ? "Creating..." : "Done"}
           </button>
@@ -58,21 +58,21 @@ export default function CreatePage() {
       </header>
 
       <main className="flex-1 overflow-y-auto overscroll-contain pb-safe mt-10">
-        <div className="px-4 py-4 flex flex-col space-y-4 ">
+        <div className="px-4 py-4 flex flex-col space-y-4">
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Title"
             autoFocus
-            className="w-auto text-3xl font-bold bg-transparent outline-none mb-4 placeholder-gray-300 dark:placeholder-gray-600"
+            className="w-auto text-3xl font-bold bg-transparent outline-none mb-4 placeholder-gray-300 dark:placeholder-gray-600 text-black dark:text-white"
           />
 
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Start writing..."
-            className="w-full min-h-[calc(100vh-12rem)] resize-none bg-transparent outline-none text-base leading-relaxed placeholder-gray-300 dark:placeholder-gray-600 placeholder:pt-2 placeholder:text-md "
+            className="w-full min-h-[calc(100vh-12rem)] resize-none bg-transparent outline-none text-base leading-relaxed placeholder-gray-300 dark:placeholder-gray-600 text-black dark:text-white"
           />
         </div>
       </main>
