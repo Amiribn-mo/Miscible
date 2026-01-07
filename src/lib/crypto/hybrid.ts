@@ -1,7 +1,6 @@
 "use client";
 
-import { loadKey } from "./keyStore";
-import { encryptAESKeyWithRSA, decryptAESKeyWithRSA } from "./rsaWrap";
+import { loadPublicKey, loadPrivateKey } from "./keyStore";
 import { EncryptedNote } from "../db";
 
 /**
@@ -22,8 +21,8 @@ async function generateAESKey(): Promise<CryptoKey> {
  * Encrypts note content with AES-GCM, then wraps the AES key with RSA
  */
 export async function encryptNote(content: string) {
-  // Load RSA public key
-  const publicKey = await loadKey("public");
+  // Load RSA public key (no passphrase needed for public key)
+  const publicKey = await loadPublicKey();
   if (!publicKey) throw new Error("Public key not found");
 
   // Generate random AES key for this note
@@ -43,8 +42,15 @@ export async function encryptNote(content: string) {
     encodedContent
   );
 
+  // Export AES key as raw bytes
+  const rawAesKey = await crypto.subtle.exportKey("raw", aesKey);
+
   // Wrap AES key with RSA public key
-  const encryptedKey = await encryptAESKeyWithRSA(aesKey, publicKey);
+  const encryptedKey = await crypto.subtle.encrypt(
+    { name: "RSA-OAEP" },
+    publicKey,
+    rawAesKey
+  );
 
   return {
     encryptedContent,
@@ -55,14 +61,34 @@ export async function encryptNote(content: string) {
 
 /**
  * Decrypts a note by unwrapping the AES key with RSA, then decrypting content
+ * Requires passphrase to decrypt the private key
  */
 export async function decryptNote(note: EncryptedNote): Promise<string> {
-  // Load RSA private key
-  const privateKey = await loadKey("private");
-  if (!privateKey) throw new Error("Private key not found");
+  // Get passphrase from session
+  const passphrase = sessionStorage.getItem("passphrase");
+  if (!passphrase) {
+    throw new Error("Not authenticated. Please unlock first.");
+  }
+
+  // Load RSA private key (requires passphrase)
+  const privateKey = await loadPrivateKey(passphrase);
+  if (!privateKey) throw new Error("Failed to decrypt private key. Wrong passphrase?");
 
   // Unwrap AES key using RSA private key
-  const aesKey = await decryptAESKeyWithRSA(note.encryptedKey, privateKey);
+  const rawAesKey = await crypto.subtle.decrypt(
+    { name: "RSA-OAEP" },
+    privateKey,
+    note.encryptedKey
+  );
+
+  // Import the raw AES key
+  const aesKey = await crypto.subtle.importKey(
+    "raw",
+    rawAesKey,
+    { name: "AES-GCM" },
+    false,
+    ["decrypt"]
+  );
 
   // Decrypt content with AES-GCM
   const decryptedContent = await crypto.subtle.decrypt(

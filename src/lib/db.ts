@@ -15,8 +15,10 @@ class DB extends Dexie {
 
   constructor() {
     super("SecureVault");
-    this.version(1).stores({
-      notes: "++id, title, updatedAt",
+    
+    // Bump to version 10 to match existing DB
+    this.version(10).stores({
+      notes: "++id, title, createdAt, updatedAt",
     });
   }
 }
