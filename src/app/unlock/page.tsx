@@ -47,18 +47,18 @@ export default function UnlockPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-black dark:bg-white flex items-center justify-center">
-            <svg className="w-10 h-10 text-white dark:text-black" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-            </svg>
+            <svg width="54" height="54" viewBox="0 0 20 20" fill="currentColor">
+  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+</svg>
           </div>
-          <h1 className="text-3xl font-bold mb-3">Welcome Back</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-3xl font-bold mb-3">Miscible</h1>
+          <p className="text-gray-600 dark:text-gray-400 ">
             Enter your passphrase to unlock your notes
           </p>
         </div>
 
-        <div className="space-y-4">
-          <div>
+        <div className=" p-4 text-center space-y-6">
+          <div className="space-y-6">
             <input
               type="password"
               value={passphrase}
@@ -66,7 +66,7 @@ export default function UnlockPage() {
               onKeyPress={handleKeyPress}
               placeholder="Enter your passphrase"
               autoFocus
-              className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+              className="w-fit px-8 py-6 border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white placeholder:text-md text-center"
             />
           </div>
 
@@ -79,12 +79,13 @@ export default function UnlockPage() {
           <button
             onClick={handleUnlock}
             disabled={loading || !passphrase}
-            className="w-full px-6 py-4 bg-black dark:bg-white text-white dark:text-black rounded-full text-lg font-medium disabled:opacity-50 active:scale-95 transition-transform touch-manipulation"
+            className="w-fit px-6 py-4 bg-black dark:bg-white text-black dark:text-black rounded-full text-lg font-medium disabled:opacity-50 active:scale-95 transition-transform touch-manipulation"
           >
             {loading ? "Unlocking..." : "Unlock"}
           </button>
         </div>
       </div>
+      
     </div>
   );
 }

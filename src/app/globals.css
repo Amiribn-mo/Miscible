@@ -2,32 +2,3 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Optional: You can keep your CSS variables if needed */
-}
-
-.dark {
-  /* Optional: Dark mode CSS variables */
-}
-
-/* Remove @layer base and use direct CSS */
-* {
-  border-color: #e5e7eb; /* gray-200 */
-  outline-color: rgba(209, 213, 219, 0.5); /* gray-300/50 */
-}
-
-body {
-  background-color: #ffffff; /* white */
-  color: #0a0a0a; /* gray-950 */
-}
-
-/* Dark mode styles */
-.dark * {
-  border-color: #1f2937; /* gray-800 */
-  outline-color: rgba(55, 65, 81, 0.5); /* gray-700/50 */
-}
-
-.dark body {
-  background-color: #0a0a0a; /* gray-950 */
-  color: #fafafa; /* gray-50 */
-}

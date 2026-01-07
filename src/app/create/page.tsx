@@ -35,8 +35,8 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-neutral-900">
-      <header className="flex-shrink-0 pt-safe pb-3 px-4 border-b border-gray-200 dark:border-neutral-800">
+    <div className="h-screen  flex flex-col bg-white dark:bg-neutral-900 ">
+      <header className="flex-shrink-0 pt-safe pb-3 px-4 border-b border-gray-200 dark:border-neutral-800 mt-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.push("/notes")}
@@ -57,22 +57,22 @@ export default function CreatePage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto overscroll-contain pb-safe">
-        <div className="px-4 py-4">
+      <main className="flex-1 overflow-y-auto overscroll-contain pb-safe mt-10">
+        <div className="px-4 py-4 flex flex-col space-y-4 ">
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Title"
             autoFocus
-            className="w-full text-2xl font-bold bg-transparent outline-none mb-4 placeholder-gray-300 dark:placeholder-gray-600"
+            className="w-auto text-3xl font-bold bg-transparent outline-none mb-4 placeholder-gray-300 dark:placeholder-gray-600"
           />
 
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Start writing..."
-            className="w-full min-h-[calc(100vh-12rem)] resize-none bg-transparent outline-none text-base leading-relaxed placeholder-gray-300 dark:placeholder-gray-600"
+            className="w-full min-h-[calc(100vh-12rem)] resize-none bg-transparent outline-none text-base leading-relaxed placeholder-gray-300 dark:placeholder-gray-600 placeholder:pt-2 placeholder:text-md "
           />
         </div>
       </main>
