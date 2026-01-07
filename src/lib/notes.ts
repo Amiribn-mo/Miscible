@@ -41,8 +41,9 @@ export async function deleteNote(id: number) {
 }
 
 export async function listNotes() {
-  return db.notes.toArray();
+  return db.notes.orderBy("createdAt").reverse().toArray();
 }
+
 
 export async function getNote(id: number) {
   const passphrase = getPassphrase();
