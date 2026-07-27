@@ -67,3 +67,14 @@ export async function decryptWithPassphrase(
     encrypted
   );
 }
+
+/**
+ * Decrypts data using an already-derived AES CryptoKey (avoids storing the passphrase)
+ */
+export async function decryptWithKey(
+  encrypted: ArrayBuffer,
+  aesKey: CryptoKey,
+  iv: Uint8Array
+): Promise<ArrayBuffer> {
+  return crypto.subtle.decrypt({ name: "AES-GCM", iv }, aesKey, encrypted);
+}

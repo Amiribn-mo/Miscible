@@ -1,14 +1,8 @@
 import { db } from "./db";
 import { encryptNote, decryptNote } from "./crypto/hybrid";
-import { loadPublicKey, loadPrivateKey } from "./crypto/keyStore";
+import { loadPublicKey } from "./crypto/keyStore";
 
-function getPassphrase(): string {
-  const passphrase = sessionStorage.getItem("passphrase");
-  if (!passphrase) {
-    throw new Error("Not authenticated. Please unlock first.");
-  }
-  return passphrase;
-}
+import { getDerivedKey } from "./session";
 
 export async function createNote(title: string, content: string): Promise<number> {
   const publicKey = await loadPublicKey();
@@ -26,6 +20,8 @@ export async function createNote(title: string, content: string): Promise<number
     iv: encrypted.iv,
     createdAt: now,
     updatedAt: now,
+    formatVersion: 1,
+    alg: "AES-GCM+RSA-OAEP",
   });
 
   return id;
@@ -46,12 +42,8 @@ export async function listNotes() {
 
 
 export async function getNote(id: number) {
-  const passphrase = getPassphrase();
-  const privateKey = await loadPrivateKey(passphrase);
-  
-  if (!privateKey) {
-    throw new Error("Failed to decrypt. Wrong passphrase.");
-  }
+  const derived = getDerivedKey();
+  if (!derived) throw new Error("Not authenticated. Please unlock first.");
 
   const note = await db.notes.get(id);
   if (!note) return null;

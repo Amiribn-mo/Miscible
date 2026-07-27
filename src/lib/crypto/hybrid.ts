@@ -64,14 +64,14 @@ export async function encryptNote(content: string) {
  * Requires passphrase to decrypt the private key
  */
 export async function decryptNote(note: EncryptedNote): Promise<string> {
-  // Get passphrase from session
-  const passphrase = sessionStorage.getItem("passphrase");
-  if (!passphrase) {
-    throw new Error("Not authenticated. Please unlock first.");
-  }
+  // Get derived AES key from session (do not rely on passphrase stored anywhere)
+  const { getDerivedKey } = await import("@/lib/session");
+  const derived = getDerivedKey();
+  if (!derived) throw new Error("Not authenticated. Please unlock first.");
 
-  // Load RSA private key (requires passphrase)
-  const privateKey = await loadPrivateKey(passphrase);
+  // Use the derived key to load the non-extractable RSA private key
+  const { loadPrivateKeyWithDerivedKey } = await import("./keyStore");
+  const privateKey = await loadPrivateKeyWithDerivedKey(derived);
   if (!privateKey) throw new Error("Failed to decrypt private key. Wrong passphrase?");
 
   // Unwrap AES key using RSA private key

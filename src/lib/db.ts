@@ -8,6 +8,9 @@ export interface EncryptedNote {
   iv: Uint8Array;
   createdAt: number;
   updatedAt: number;
+  // metadata
+  formatVersion?: number;
+  alg?: string;
 }
 
 class DB extends Dexie {

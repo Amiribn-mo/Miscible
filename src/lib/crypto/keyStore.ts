@@ -58,6 +58,17 @@ export async function savePrivateKey(
     passphrase
   );
 
+  // Include metadata (versioning and KDF params) for future upgrades
+  const metadata = {
+    version: 1,
+    alg: "RSA-OAEP-2048-SHA256",
+    kdf: {
+      id: "pbkdf2",
+      iterations: 100000,
+      hash: "SHA-256",
+    },
+  };
+
   const db = await openDB();
   const tx = db.transaction(STORE, "readwrite");
   const storedKey: StoredKey = {
@@ -65,6 +76,35 @@ export async function savePrivateKey(
     data: encrypted,
     salt,
     iv,
+    // @ts-ignore - attach metadata for backups/exports
+    metadata,
+  };
+  tx.objectStore(STORE).put(storedKey, "private");
+
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/**
+ * Save a private key encrypted directly with an already-derived AES CryptoKey.
+ * This avoids requiring the plaintext passphrase when rotating keys while
+ * session is unlocked.
+ */
+export async function savePrivateKeyWithDerivedKey(aesKey: CryptoKey, privateKeyData: ArrayBuffer, metadata?: any) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, privateKeyData);
+
+  const db = await openDB();
+  const tx = db.transaction(STORE, "readwrite");
+  const storedKey: StoredKey = {
+    type: "encrypted-private",
+    data: encrypted,
+    salt: new Uint8Array(0), // no salt since key already derived
+    iv,
+    // @ts-ignore
+    metadata: metadata ?? { version: 1, alg: 'RSA-OAEP-2048-SHA256', kdf: { id: 'derived' } },
   };
   tx.objectStore(STORE).put(storedKey, "private");
 
@@ -105,6 +145,7 @@ export async function loadPublicKey(): Promise<CryptoKey | null> {
  * Load private key (requires passphrase to decrypt)
  */
 export async function loadPrivateKey(passphrase: string): Promise<CryptoKey | null> {
+  // Backwards-compatible helper that still accepts a passphrase string
   const db = await openDB();
   const tx = db.transaction(STORE, "readonly");
   const req = tx.objectStore(STORE).get("private");
@@ -125,6 +166,7 @@ export async function loadPrivateKey(passphrase: string): Promise<CryptoKey | nu
       storedKey.iv
     );
 
+    // Import private key as non-extractable to reduce risk of exfiltration
     return crypto.subtle.importKey(
       "pkcs8",
       decryptedData,
@@ -132,11 +174,47 @@ export async function loadPrivateKey(passphrase: string): Promise<CryptoKey | nu
         name: "RSA-OAEP",
         hash: "SHA-256",
       },
-      true,
+      false, // make it non-extractable
       ["decrypt"]
     );
   } catch (error) {
     // Wrong passphrase
+    return null;
+  }
+}
+
+/**
+ * Load private key using an already-derived AES CryptoKey. This avoids ever
+ * storing/using the plaintext passphrase after derivation.
+ */
+export async function loadPrivateKeyWithDerivedKey(aesKey: CryptoKey): Promise<CryptoKey | null> {
+  const db = await openDB();
+  const tx = db.transaction(STORE, "readonly");
+  const req = tx.objectStore(STORE).get("private");
+
+  const storedKey = await new Promise<StoredKey | undefined>((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+
+  if (!storedKey || storedKey.type !== "encrypted-private") return null;
+  if (!storedKey.salt || !storedKey.iv) return null;
+
+  try {
+    const decryptedData = await decryptWithKey(storedKey.data, aesKey, storedKey.iv);
+
+    // Import private key as non-extractable to reduce risk of exfiltration
+    return crypto.subtle.importKey(
+      "pkcs8",
+      decryptedData,
+      {
+        name: "RSA-OAEP",
+        hash: "SHA-256",
+      },
+      false, // make it non-extractable
+      ["decrypt"]
+    );
+  } catch (error) {
     return null;
   }
 }
@@ -152,6 +230,68 @@ export async function hasKeys(): Promise<boolean> {
   return new Promise((resolve, reject) => {
     req.onsuccess = () => resolve(!!req.result);
     req.onerror = () => reject(req.error);
+  });
+}
+
+/**
+ * Retrieve the encrypted private key blob as stored (no decryption).
+ * Useful for backups where the raw encrypted bytes (still protected by passphrase) are exported.
+ */
+export async function getEncryptedPrivateKeyBlob(): Promise<
+  | { encrypted: ArrayBuffer; salt: Uint8Array; iv: Uint8Array; metadata?: any }
+  | null
+> {
+  const db = await openDB();
+  const tx = db.transaction(STORE, "readonly");
+  const req = tx.objectStore(STORE).get("private");
+
+  const storedKey = await new Promise<any | undefined>((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+
+  if (!storedKey || storedKey.type !== "encrypted-private") return null;
+  if (!storedKey.salt || !storedKey.iv) return null;
+
+  return { encrypted: storedKey.data, salt: storedKey.salt, iv: storedKey.iv, metadata: storedKey.metadata };
+}
+
+/**
+ * Rotation helpers - store a small rotation state in the keys DB so rotation
+ * can be resumed or inspected by UI.
+ */
+export async function setRotationState(state: any) {
+  const db = await openDB();
+  const tx = db.transaction(STORE, "readwrite");
+  tx.objectStore(STORE).put({ type: 'rotation', state }, 'rotation');
+
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getRotationState(): Promise<any | null> {
+  const db = await openDB();
+  const tx = db.transaction(STORE, "readonly");
+  const req = tx.objectStore(STORE).get('rotation');
+
+  const res = await new Promise<any | undefined>((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+
+  return res?.state ?? null;
+}
+
+export async function clearRotationState() {
+  const db = await openDB();
+  const tx = db.transaction(STORE, "readwrite");
+  tx.objectStore(STORE).delete('rotation');
+
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
   });
 }
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { hasKeys, loadPublicKey, loadPrivateKey } from "@/lib/crypto/keyStore";
+import { hasKeys, loadPublicKey, loadPrivateKeyWithDerivedKey } from "@/lib/crypto/keyStore";
 
 export function useRequireAuth() {
   const router = useRouter();
@@ -28,21 +28,23 @@ export function useRequireAuth() {
           return;
         }
 
-        // Keys exist, check if we have passphrase in session
-        const passphrase = sessionStorage.getItem("passphrase");
+        // Keys exist, check if we have an unlocked session
+        const session = await import("@/lib/session");
+        const unlocked = session.isUnlocked();
 
-        if (!passphrase) {
+        if (!unlocked) {
           // Need to unlock
           router.push("/unlock");
           return;
         }
 
-        // Verify passphrase works
-        const privateKey = await loadPrivateKey(passphrase);
+        // Verify derived key can load the private key
+        const derived = session.getDerivedKey();
+        const privateKey = await loadPrivateKeyWithDerivedKey(derived as CryptoKey);
 
         if (!privateKey) {
-          // Invalid session passphrase, need to unlock
-          sessionStorage.removeItem("passphrase");
+          // Invalid session, clear and require unlock
+          session.clearDerivedKey();
           router.push("/unlock");
           return;
         }

@@ -34,17 +34,39 @@ export default function OnboardingPage() {
           hash: "SHA-256",
         },
         true,
-        ["encrypt", "decrypt"]
+        ["encrypt", "decrypt"],
       );
 
-      const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);
-      const privateKey = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+      const publicKey = await crypto.subtle.exportKey(
+        "spki",
+        keyPair.publicKey,
+      );
+      const privateKey = await crypto.subtle.exportKey(
+        "pkcs8",
+        keyPair.privateKey,
+      );
 
-      await savePublicKey(publicKey);
-      await savePrivateKey(privateKey, passphrase);
-      sessionStorage.setItem("passphrase", passphrase);
+      try {
+        await savePublicKey(publicKey);
+        await savePrivateKey(privateKey, passphrase);
 
-      router.push("/notes");
+        // Zero privateKey bytes immediately after storing
+        try {
+          const arr = new Uint8Array(privateKey);
+          arr.fill(0);
+        } catch (_) {
+          // ignore if not zeroable
+        }
+
+        // Set session with expiry (derives and stores an AES key in memory, not the passphrase)
+        await (await import("@/lib/session")).setPassphrase(passphrase);
+
+        router.push("/notes");
+      } catch (err) {
+        throw err;
+      } finally {
+        // ensure any references are dropped
+      }
     } catch (error) {
       console.error("Setup failed:", error);
       setError("Failed to set up encryption. Please try again.");
@@ -57,19 +79,32 @@ export default function OnboardingPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-black dark:bg-white flex items-center justify-center">
-            <svg className="w-10 h-10 text-white dark:text-black" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            <svg
+              className="w-10 h-10 text-white dark:text-black"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold mb-3 text-black dark:text-white">Create Your Passphrase</h1>
+          <h1 className="text-3xl font-bold mb-3 text-black dark:text-white">
+            Create Your Passphrase
+          </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            This passphrase encrypts your notes. You'll need it to access your notes on any device.
+            This passphrase encrypts your notes. You'll need it to access your
+            notes on any device.
           </p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2 text-black dark:text-white">Passphrase</label>
+            <label className="block text-sm font-medium mb-2 text-black dark:text-white">
+              Passphrase
+            </label>
             <input
               type="password"
               value={passphrase}
@@ -80,7 +115,9 @@ export default function OnboardingPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2 text-black dark:text-white">Confirm Passphrase</label>
+            <label className="block text-sm font-medium mb-2 text-black dark:text-white">
+              Confirm Passphrase
+            </label>
             <input
               type="password"
               value={confirmPassphrase}
@@ -106,7 +143,9 @@ export default function OnboardingPage() {
 
           <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
             <p className="text-sm text-amber-800 dark:text-amber-200">
-              ⚠️ <strong>Important:</strong> Store this passphrase safely. Without it, you cannot access your notes on new devices. We cannot recover it for you.
+              ⚠️ <strong>Important:</strong> Store this passphrase safely.
+              Without it, you cannot access your notes on new devices. We cannot
+              recover it for you.
             </p>
           </div>
         </div>

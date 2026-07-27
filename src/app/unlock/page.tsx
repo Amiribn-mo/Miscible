@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { loadPrivateKey } from "@/lib/crypto/keyStore";
 
 export default function UnlockPage() {
   const router = useRouter();
@@ -17,15 +16,50 @@ export default function UnlockPage() {
     setError("");
 
     try {
-      const privateKey = await loadPrivateKey(passphrase);
+      const throttle = await import("@/lib/authThrottle");
+      const attempt = throttle.canAttemptUnlock();
+      if (!attempt.ok) {
+        setError(
+          `Too many attempts. Try again in ${Math.ceil((attempt.waitMs ?? 0) / 1000)}s`,
+        );
+        setLoading(false);
+        return;
+      }
 
-      if (!privateKey) {
+      // Attempt to derive session AES key and verify by loading the private key via derived key
+      const session = await import("@/lib/session");
+      const setOk = await session.setPassphrase(passphrase);
+
+      if (!setOk) {
+        throttle.recordFailedAttempt();
         setError("Incorrect passphrase");
         setLoading(false);
         return;
       }
 
-      sessionStorage.setItem("passphrase", passphrase);
+      // Verify we can load the private key using the derived AES key
+      const { loadPrivateKeyWithDerivedKey } =
+        await import("@/lib/crypto/keyStore");
+      const derived = session.getDerivedKey();
+      if (!derived) {
+        setError("Failed to initialize session");
+        setLoading(false);
+        return;
+      }
+
+      const privateKey = await loadPrivateKeyWithDerivedKey(derived);
+      if (!privateKey) {
+        // invalid passphrase
+        throttle.recordFailedAttempt();
+        setError("Incorrect passphrase");
+        // clear any derived session state
+        session.clearDerivedKey();
+        setLoading(false);
+        return;
+      }
+
+      // success
+      (await import("@/lib/authThrottle")).resetAttempts();
       router.push("/notes");
     } catch (error) {
       console.error("Unlock failed:", error);
@@ -45,11 +79,21 @@ export default function UnlockPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-black dark:bg-white flex items-center justify-center">
-            <svg className="w-10 h-10 text-white dark:text-black" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            <svg
+              className="w-10 h-10 text-white dark:text-black"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold mb-3 text-black dark:text-white">Miscible</h1>
+          <h1 className="text-3xl font-bold mb-3 text-black dark:text-white">
+            Miscible
+          </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Enter your passphrase to unlock your notes
           </p>
