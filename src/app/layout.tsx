@@ -1,6 +1,9 @@
 import OfflineBadge from "@/components/OfflineBadge";
 import "./globals.css";
-<meta name="viewport" content="width=device-width, initial-scale=1" />;
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata = {
   title: "Miscible",
