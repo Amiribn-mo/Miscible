@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { hasKeys, loadPublicKey, loadPrivateKeyWithDerivedKey } from "@/lib/crypto/keyStore";
-
+import * as session from "@/lib/session";
 export function useRequireAuth() {
   const router = useRouter();
   const pathname = usePathname();
@@ -29,7 +29,6 @@ export function useRequireAuth() {
         }
 
         // Keys exist, check if we have an unlocked session
-        const session = await import("@/lib/session");
         const unlocked = session.isUnlocked();
 
         if (!unlocked) {

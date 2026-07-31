@@ -2,6 +2,7 @@
 
 import { loadPublicKey, loadPrivateKey } from "./keyStore";
 import { EncryptedNote } from "../db";
+import * as session from "@/lib/session";
 
 /**
  * Generates a random AES-256-GCM key
@@ -65,8 +66,7 @@ export async function encryptNote(content: string) {
  */
 export async function decryptNote(note: EncryptedNote): Promise<string> {
   // Get derived AES key from session (do not rely on passphrase stored anywhere)
-  const { getDerivedKey } = await import("@/lib/session");
-  const derived = getDerivedKey();
+  const derived = session.getDerivedKey();
   if (!derived) throw new Error("Not authenticated. Please unlock first.");
 
   // Use the derived key to load the non-extractable RSA private key

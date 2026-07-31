@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { savePublicKey, savePrivateKey } from "@/lib/crypto/keyStore";
-
+import * as session from "@/lib/session";
 export default function OnboardingPage() {
   const router = useRouter();
   const [passphrase, setPassphrase] = useState("");
@@ -59,7 +59,7 @@ export default function OnboardingPage() {
         }
 
         // Set session with expiry (derives and stores an AES key in memory, not the passphrase)
-        await (await import("@/lib/session")).setPassphrase(passphrase);
+        await session.setPassphrase(passphrase);
 
         router.push("/notes");
       } catch (err) {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
+import * as session from "@/lib/session";
 export default function UnlockPage() {
   const router = useRouter();
   const [passphrase, setPassphrase] = useState("");
@@ -27,7 +27,6 @@ export default function UnlockPage() {
       }
 
       // Attempt to derive session AES key and verify by loading the private key via derived key
-      const session = await import("@/lib/session");
       const setOk = await session.setPassphrase(passphrase);
 
       if (!setOk) {
