@@ -1,6 +1,6 @@
 "use client";
 
-import { encryptWithPassphrase, decryptWithPassphrase } from "./passphrase";
+import { encryptWithPassphrase, decryptWithPassphrase, decryptWithKey } from "./passphrase";
 
 const DB_NAME = "SecureVaultKeys";
 const STORE = "keys";
